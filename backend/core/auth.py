@@ -40,3 +40,6 @@ class StaffAuth(HttpBearer):
             return None
 
         return user
+
+def is_owner(user):
+    return user.is_superuser or user.groups.filter(name = "Owner").exists()

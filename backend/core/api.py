@@ -1,9 +1,9 @@
 from ninja import Router, Schema
 from .models import StoreSettings
 
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from ninja.errors import HttpError
-from .auth import make_token, StaffAuth
+from .auth import make_token, StaffAuth, is_owner
 
 #create collection of API endpoints that belong to core app
 router = Router()
@@ -53,4 +53,25 @@ def me(request):
     return {
         "id": user.id,
         "username": user.username,
+        "is_owner": is_owner(user),
     }
+
+#requires valid staff token
+@router.get("/staff/users", auth= StaffAuth())
+def staff_user(request):
+
+    User = get_user_model()
+
+    users = User.objects.filter(
+        is_active = True,
+        is_staff = True,
+    ).order_by("username")
+
+    return [
+        {
+            "id": user.id,
+            "username": user.username,
+        }
+
+        for user in users
+    ]
