@@ -15,6 +15,18 @@ class StoreSettings(models.Model):
     instagram_handle = models.CharField(max_length = 100, default="")
     owner_email = models.EmailField(default="")
 
+    #mode
+    ORDERING_MODE_CHOICES = [
+        ("demo", "Demo"),
+        ("live", "Live")
+    ]
+
+    ordering_mode = models.CharField(
+        max_length = 15,
+        choices = ORDERING_MODE_CHOICES,
+        default="demo",
+    )
+
 
     def __str__(self):
         return "Store Settings"
