@@ -1,1 +1,4 @@
 Django>=5.1,<6
+
+#turn python functions into JSON API endpoints/ free doc page
+django-ninja>=1.3,<2
