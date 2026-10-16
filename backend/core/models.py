@@ -27,6 +27,12 @@ class StoreSettings(models.Model):
         default="demo",
     )
 
+    #money
+    excise_tax_bps = models.PositiveIntegerField(default = 1500)
+    sales_tax_bps = models.PositiveIntegerField(default = 775)
+    delivery_fee_cents = models.PositiveIntegerField(default = 500)
+    delivery_min_cents = models.PositiveIntegerField(default = 5000)
+
 
     def __str__(self):
         return "Store Settings"
