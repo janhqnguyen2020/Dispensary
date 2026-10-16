@@ -43,6 +43,19 @@ class StoreSettings(models.Model):
         ]
         return str(zip_code).strip() in allowed_zips
 
+    #limits
+    flower_limit_grams = models.DecimalField(
+        max_digits = 5,
+        decimal_places = 1,
+        default = "28.5",
+    )
+
+    concentrate_limit_grams = models.DecimalField(
+        max_digits = 4,
+        decimal_places = 1,
+        default="8.0",
+    )
+
 
     def __str__(self):
         return "Store Settings"
