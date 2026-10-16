@@ -33,6 +33,16 @@ class StoreSettings(models.Model):
     delivery_fee_cents = models.PositiveIntegerField(default = 500)
     delivery_min_cents = models.PositiveIntegerField(default = 5000)
 
+    #delivery 
+    delivery_zips = models.TextField(default = "92618")
+
+    def delivers_to(self, zip_code):
+        allowed_zips = [
+            zip_code.strip()
+            for zip_code in self.delivery_zips.split(",")
+        ]
+        return str(zip_code).strip() in allowed_zips
+
 
     def __str__(self):
         return "Store Settings"
