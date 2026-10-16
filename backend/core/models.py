@@ -56,6 +56,10 @@ class StoreSettings(models.Model):
         default="8.0",
     )
 
+    class Meta:
+        verbose_name = "Store Settings"
+        verbose_name_plural = "Store Settings"
+
 
     def __str__(self):
         return "Store Settings"
