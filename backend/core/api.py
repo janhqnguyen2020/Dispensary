@@ -3,7 +3,7 @@ from .models import StoreSettings
 
 from django.contrib.auth import authenticate
 from ninja.errors import HttpError
-from .auth import make_token
+from .auth import make_token, StaffAuth
 
 #create collection of API endpoints that belong to core app
 router = Router()
@@ -45,3 +45,12 @@ def login(request, payload: LoginIn):
         raise HttpError(401, "Invalid credentials or staff access needed")
 
     return {"token": make_token(user)}
+
+#require staff authentication
+@router.get("/auth/me", auth = StaffAuth())
+def me(request):
+    user = request.auth
+    return {
+        "id": user.id,
+        "username": user.username,
+    }
