@@ -1,5 +1,5 @@
 from ninja import Router
-from .models import Category, Brand
+from .models import Category, Brand, Product
 
 router = Router()
 
@@ -27,4 +27,19 @@ def list_brands(request):
         }
 
         for brand in brands
+    ]
+
+@router.get("/products")
+def list_products(request):
+    products = Product.objects.filter(status="active").select_related("brand","category").order_by("name","id")
+
+    return [
+        {
+            "slug": product.slug,
+            "name": product.name,
+            "brand": product.brand.name,
+            "category": product.category.name,
+        }
+
+        for product in products
     ]
