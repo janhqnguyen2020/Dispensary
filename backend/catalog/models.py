@@ -114,6 +114,7 @@ class Variant(models.Model):
     )
 
     label = models.CharField(max_length = 100)
+    weight_grams = models.DecimalField(max_digits = 6, decimal_places = 2, null = True, blank = True)
     price_cents = models.PositiveIntegerField()
     stock_on_hand = models.PositiveIntegerField(default = 0)
     stock_reserved = models.PositiveIntegerField(default = 0)
