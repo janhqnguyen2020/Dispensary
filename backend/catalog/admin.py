@@ -18,6 +18,6 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "brand", "category", "status", "slug")
+    list_display = ("name", "brand", "category", "status", "is_featured","slug")
     search_fields = ("name", "brand__name", "slug")
-    list_filter = ("status", "category", "brand")
+    list_filter = ("status", "category", "brand", "is_featured")

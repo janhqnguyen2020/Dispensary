@@ -74,6 +74,28 @@ class Product(models.Model):
         default = "active",
     )
 
+    strain_type = models.CharField(max_length = 50, blank = True)
+    thc_value = models.DecimalField(
+        max_digits = 6, decimal_places = 2, null = True, blank = True
+    )
+    cbd_value = models.DecimalField(
+        max_digits = 6, decimal_places = 2, null = True, blank = True
+    )
+    potency_unit = models.CharField(
+        max_length = 2,
+        choices = [("%","%"),("mg", "mg")],
+        default="%",
+    )
+    summary = models.TextField(blank=True)
+    effects = models.TextField(blank=True)
+    image_url = models.URLField(blank = True)
+    is_featured = models.BooleanField(default = False)
+    created_at = models.DateTimeField(auto_now_add = True)
+
+    @property
+    def effects_list(self):
+        return [effect.strip() for effect in self.effects.split(",") if effect.strip()]
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(f"{self.brand.name}-{self.name}")
