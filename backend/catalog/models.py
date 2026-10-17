@@ -105,4 +105,23 @@ class Product(models.Model):
     def __str__(self):
         return f"{self.brand.name} - {self.name}"
     
-                    
+
+class Variant(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete = models.CASCADE,
+        related_name = "variants",
+    )
+
+    label = models.CharField(max_length = 100)
+    price_cents = models.PositiveIntegerField()
+    stock_on_hand = models.PositiveIntegerField(default = 0)
+    stock_reserved = models.PositiveIntegerField(default = 0)
+    is_active = models.BooleanField(default = True)
+
+    @property
+    def available(self):
+        return max(0, self.stock_on_hand - self.stock_reserved)
+
+    def __str__(self):
+        return f"{self.product.name} - {self.label}"

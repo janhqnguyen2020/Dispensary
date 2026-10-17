@@ -1,4 +1,7 @@
 from ninja import Router
+
+from django.db.models import Min, Q
+
 from .models import Category, Brand, Product
 
 router = Router()
@@ -31,7 +34,7 @@ def list_brands(request):
 
 @router.get("/products")
 def list_products(request):
-    products = Product.objects.filter(status="active").select_related("brand","category").order_by("name","id")
+    products = Product.objects.filter(status="active").select_related("brand","category").annotate(from_price=Min("variants__price_cents",filter=Q(variants__is_active = True),)).order_by("name","id")
 
     return [
         {
@@ -39,6 +42,14 @@ def list_products(request):
             "name": product.name,
             "brand": product.brand.name,
             "category": product.category.name,
+
+            "from_price_cents": product.from_price,
+            "strain_type": product.strain_type,
+            "thc_value": product.thc_value,
+            "cbd_value": product.cbd_value,
+            "potency_unit": product.potency_unit,
+            "image_url": product.image_url,
+            "category_slug": product.category.slug,
         }
 
         for product in products
