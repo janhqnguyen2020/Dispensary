@@ -33,8 +33,42 @@ def list_brands(request):
     ]
 
 @router.get("/products")
-def list_products(request):
-    products = Product.objects.filter(status="active").select_related("brand","category").annotate(from_price=Min("variants__price_cents",filter=Q(variants__is_active = True),)).order_by("name","id")
+def list_products(
+    request,
+    category: str = None,
+    brand: str = None,
+    strain: str = None,
+    featured: bool = None,
+    q: str = None,
+    ):
+    #start with active products and calc lowest active variant
+    products = Product.objects.filter(status="active").select_related("brand","category").annotate(
+        from_price=Min(
+            "variants__price_cents",
+            filter=Q(variants__is_active = True),
+            ))
+
+    if category:
+        products = products.filter(category__slug = category)
+
+    if brand:
+        products = products.filter(brand__slug = brand)
+
+    if strain:
+        products = products.filter(strain_type__iexact = strain)
+
+    #only filter hwen user explicitly provide strue or false
+    if featured is not None:
+        products = products.filter(is_featured = featured)
+
+    #search across product name, brand, summary, effects
+    if q:
+        products = products.filter(
+            Q(name__icontains = q) | Q(brand__name__icontains = q)
+            | Q(summary__icontains = 1) | Q(effects__icontains = 1)
+        )
+
+    products = products.order_by("name", "id")
 
     return [
         {
