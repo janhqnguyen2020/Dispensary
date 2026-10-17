@@ -19,3 +19,29 @@ class Brand(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Category(models.Model):
+    LIMIT_GROUP_CHOICES = [
+        ("none", "None"),
+        ("flower","Flower"),
+        ("concentrate", "Concentrate"),
+    ]
+
+    name = models.CharField(max_length = 200, unique= True)
+    slug = models.SlugField(max_length = 200, unique = True, blank = True)
+    sort_order = models.PositiveIntegerField(default = 0)
+    limit_group = models.CharField(
+        max_length = 20, 
+        choices = LIMIT_GROUP_CHOICES, 
+        default = "none",
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
