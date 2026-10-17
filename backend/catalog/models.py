@@ -45,3 +45,42 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+class Product(models.Model):
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("active", "Active"),
+        ("archived", "Archived"),
+    ]
+
+    brand = models.ForeignKey(
+        Brand,
+        on_delete = models.PROTECT,
+        related_name = "products",
+    )
+
+    category = models.ForeignKey(
+        Category,
+        on_delete = models.PROTECT,
+        related_name = "products",
+    )
+
+    name = models.CharField(max_length = 200)
+    slug = models.CharField(max_length = 400, unique = True, blank = True)
+
+    status = models.CharField(
+        max_length = 20,
+        choices = STATUS_CHOICES,
+        default = "active",
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(f"{self.brand.name}-{self.name}")
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.brand.name} - {self.name}"
+    
+                    
