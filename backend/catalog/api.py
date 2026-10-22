@@ -39,7 +39,7 @@ def list_products(
     brand: str = None,
     strain: str = None,
     featured: bool = None,
-    q: str = None,
+    search: str = None,
     ):
     #start with active products and calc lowest active variant
     products = Product.objects.filter(status="active").select_related("brand","category").annotate(
@@ -62,10 +62,10 @@ def list_products(
         products = products.filter(is_featured = featured)
 
     #search across product name, brand, summary, effects
-    if q:
+    if search:
         products = products.filter(
-            Q(name__icontains = q) | Q(brand__name__icontains = q)
-            | Q(summary__icontains = q) | Q(effects__icontains = q)
+            Q(name__icontains = search) | Q(brand__name__icontains = search)
+            | Q(summary__icontains = search) | Q(effects__icontains = search)
         )
 
     products = products.order_by("name", "id")
