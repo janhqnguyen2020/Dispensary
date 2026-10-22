@@ -32,7 +32,8 @@ class ProductListTests(TestCase):
     def names(self, params = None):
         response = self.client.get("/api/v1/products", params or {})
         self.assertEqual(response.status_code, 200)
-        return sorted(p["name"] for p in response.json())
+
+        return sorted(product["name"] for product in response.json()["items"])
 
     def test_list_hides_drafts(self):
         self.assertEqual(self.names(), ["Blue Dream", "Mango Gummies", "OG Kush"])
@@ -69,12 +70,14 @@ class ProductListTests(TestCase):
         self.assertEqual(self.names({"category": "flower", "search":"kush"}), ["OG Kush"])
 
     def test_from_price_ignores_inactive_variants(self):
-        data = self.client.get("/api/v1/products").json()
-        blue = next(p for p in data if p["slug"] == "grey-matter-blue-dream")
+        response = self.client.get("/api/v1/products")
+        data = response.json()["items"]
+
+        blue = next(product for product in data if product["slug"] == "grey-matter-blue-dream")
         self.assertEqual(blue["from_price_cents"], 3500)
 
     def ordered_names(self, response):
-        return [item["name"] for item in response.json()]
+        return [item["name"] for item in response.json()["items"]]
 
     def test_sort_price_asc(self):
         response = self.client.get("/api/v1/products", {"sort":"price_asc"},)
@@ -92,3 +95,46 @@ class ProductListTests(TestCase):
             self.ordered_names(unknown_reponse),
             self.ordered_names(default_response),
         )
+
+    def test_pagination_metadata(self):
+        response = self.client.get("/api/v1/products")
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data["page"], 1)
+        self.assertEqual(data["pages"], 1)
+        self.assertEqual(data["total"], 3)
+        self.assertEqual(len(data["items"]), 3)
+
+    def test_page_999_returns_last_page(self):
+        response = self.client.get("/api/v1/products", {"page": 999},)
+
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data["page"], 1)
+        self.assertEqual(data["pages"], 1)
+        self.assertEqual(data["total"], 3)
+
+    def test_total_counts_filtred_results(self):
+        response = self.client.get("/api/v1/products", {"category":"edibles"},)
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data["total"], 1)
+        self.assertEqual(
+            [item["name"] for item in data["items"]],
+            ["Mango Gummies"],
+        )
+
+    def test_empty_catalog(self):
+        Product.objects.all().delete()
+
+        response = self.client.get("/api/v1/products")
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data["items"], [])
+        self.assertEqual(data["page"], 1)
+        self.assertEqual(data["pages"], 1)
+        self.assertEqual(data["total"], 0)

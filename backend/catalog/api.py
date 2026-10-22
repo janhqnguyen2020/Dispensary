@@ -1,6 +1,7 @@
 from ninja import Router
 
 from django.db.models import Min, Q, F
+from math import ceil
 
 from .models import Category, Brand, Product
 
@@ -41,6 +42,7 @@ def list_products(
     featured: bool = None,
     search: str = None,
     sort: str = "name",
+    page: int = 1,
     ):
     #start with active products and calc lowest active variant
     products = Product.objects.filter(status="active").select_related("brand","category").annotate(
@@ -80,7 +82,19 @@ def list_products(
     #unpacks tuple and falls back to alphabetical ordering if error
     products = products.order_by(*sort_options.get(sort, sort_options["name"]))
 
-    return [
+    ### PAGINATION ###
+    page_size = 24
+    total = products.count()#count products after filteringa nd searching
+    pages = max(1, ceil(total / page_size))#calc total pages needed
+
+    page = min(max(page, 1), pages)#keep requested page within valid range
+
+    start = (page - 1) * page_size
+    end = start + page_size
+
+    products = products[start:end]#fetch only products from selected page
+
+    items = [
         {
             "slug": product.slug,
             "name": product.name,
@@ -98,3 +112,10 @@ def list_products(
 
         for product in products
     ]
+
+    return {
+        "items":items,
+        "page":page,
+        "pages": pages,
+        "total": total,
+    }
