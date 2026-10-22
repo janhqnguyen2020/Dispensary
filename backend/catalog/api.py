@@ -2,6 +2,7 @@ from ninja import Router
 
 from django.db.models import Min, Q, F
 from math import ceil
+from django.shortcuts import get_object_or_404
 
 from .models import Category, Brand, Product
 
@@ -118,4 +119,40 @@ def list_products(
         "page":page,
         "pages": pages,
         "total": total,
+    }
+
+@router.get("/products/{slug}")#define url with variable product slug
+def product_detail(request, slug: str):
+    product = get_object_or_404(
+        Product.objects.filter(status="active").select_related("brand", "category",
+    ), slug = slug,)#prevent draft and archived, efficiently load related
+
+    variants = product.variants.filter(is_active = True).order_by("price_cents")
+
+    return {
+        "id": product.id,
+        "slug": product.slug,
+        "name": product.name,
+        "brand": product.brand.name,
+        "category": product.category.name,
+
+        "category_slug":product.category.slug,
+        "summary": product.summary,
+        "effects": product.effects_list,
+        "strain_type": product.strain_type,
+        "thc_value": product.thc_value,
+        "cbd_value": product.cbd_value,
+        "potency_unit": product.potency_unit,
+        "image_url": product.image_url,
+        "is_featured": product.is_featured,
+        "variants": [
+            {
+                "id": variant.id,
+                "label": variant.label,
+                "weight_grams": variant.weight_grams,
+                "price_cents": variant.price_cents,
+                "available": variant.available,
+            }
+            for variant in variants
+        ],
     }

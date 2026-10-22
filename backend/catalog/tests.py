@@ -138,3 +138,36 @@ class ProductListTests(TestCase):
         self.assertEqual(data["page"], 1)
         self.assertEqual(data["pages"], 1)
         self.assertEqual(data["total"], 0)
+
+    def test_detail_active_product(self):
+        response = self.client.get(f"/api/v1/products/{self.blue.slug}")
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        self.assertEqual(data["name"], "Blue Dream")
+        self.assertEqual(data["slug"], self.blue.slug)
+        self.assertEqual(data["brand"], "Grey Matter")
+        self.assertEqual(data["category"], "Flower")
+        self.assertEqual(data["effects"], ["Relaxed", "Happy"])
+
+        #only active variants should be returned
+        self.assertEqual(len(data["variants"]), 2)
+
+        variant_labels = [
+            variant["label"] for variant in data["variants"]
+        ]
+        self.assertEqual(variant_labels, ["3.5 g", "7 g"])
+
+    def test_detail_draft_product_returns_404(self):
+        draft = Product.objects.get(name="Hidden Draft")
+
+        response = self.client.get(f"/api/v1/products/{draft.slug}")
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_detail_unkown_slug_returns_404(self):
+        response = self.client.get("/api/v1/products/does-not-exist")
+
+        self.assertEqual(response.status_code, 404)
