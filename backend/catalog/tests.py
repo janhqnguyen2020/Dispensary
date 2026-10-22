@@ -16,13 +16,18 @@ class ProductListTests(TestCase):
             strain_type = "Hybrid", effects = "Relaxed, Happy", is_featured = True,
         )
 
-        Product.objects.create(brand = grey, category = flower, name = "OG Kush", strain_type = "Indica")
+        self.og = Product.objects.create(
+            brand=grey, category = flower, name="OG Kush", strain_type = "Indica",
+        )
+
         Product.objects.create(brand =sunny, category = edibles, name = "Mango Gummies", summary = "Tropical fruit chews")
         Product.objects.create(brand = sunny, category = edibles, name = "Hidden Draft", status = "draft")
 
         Variant.objects.create(product = self.blue, label = "3.5 g", price_cents = 3500)
         Variant.objects.create(product = self.blue, label = "7 g", price_cents = 6500)
         Variant.objects.create(product = self.blue, label = "1 g", price_cents = 100, is_active = False)
+
+        Variant.objects.create(product = self.og, label = "3.5 g", price_cents = 2500,)
 
     def names(self, params = None):
         response = self.client.get("/api/v1/products", params or {})
@@ -67,3 +72,23 @@ class ProductListTests(TestCase):
         data = self.client.get("/api/v1/products").json()
         blue = next(p for p in data if p["slug"] == "grey-matter-blue-dream")
         self.assertEqual(blue["from_price_cents"], 3500)
+
+    def ordered_names(self, response):
+        return [item["name"] for item in response.json()]
+
+    def test_sort_price_asc(self):
+        response = self.client.get("/api/v1/products", {"sort":"price_asc"},)
+
+        self.assertEqual(response.status_code, 200)
+
+        names = self.ordered_names(response)
+        self.assertEqual(names[0], "OG Kush")
+
+    def test_unknown_sort_falls_back_to_name(self):
+        default_response = self.client.get("/api/v1/products")
+        unknown_reponse = self.client.get("/api/v1/products", {"sort":"banana"},)
+
+        self.assertEqual(
+            self.ordered_names(unknown_reponse),
+            self.ordered_names(default_response),
+        )

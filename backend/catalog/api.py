@@ -1,6 +1,6 @@
 from ninja import Router
 
-from django.db.models import Min, Q
+from django.db.models import Min, Q, F
 
 from .models import Category, Brand, Product
 
@@ -40,6 +40,7 @@ def list_products(
     strain: str = None,
     featured: bool = None,
     search: str = None,
+    sort: str = "name",
     ):
     #start with active products and calc lowest active variant
     products = Product.objects.filter(status="active").select_related("brand","category").annotate(
@@ -68,7 +69,16 @@ def list_products(
             | Q(summary__icontains = search) | Q(effects__icontains = search)
         )
 
-    products = products.order_by("name", "id")
+    #maps each supported option to db ordering fields
+    sort_options = {
+        "price_asc": (F("from_price").asc(nulls_last = True), "name"),
+        "price_desc": (F("-from_price").desc(nulls_last=True), "name"),
+        "newest": ("-created_at", "name"),
+        "name": ("name", "id"),
+    }
+
+    #unpacks tuple and falls back to alphabetical ordering if error
+    products = products.order_by(*sort_options.get(sort, sort_options["name"]))
 
     return [
         {
