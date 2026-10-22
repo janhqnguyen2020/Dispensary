@@ -32,7 +32,7 @@ class Command(BaseCommand):
             (sunny, edibles, "Mango Gummies", "sunny-farms-mango-gummies",
              [("10 pack", None, 2000), ("20 pack", None, 3600)]),
 
-            (sunny, edibles, "Chocolar Bar", "sunny-farms-chocolate-bar",
+            (sunny, edibles, "Chocolate Bar", "sunny-farms-chocolate-bar",
              [("Single",None, 1800), ("3 Pack", None, 4800)]),
         ]
 

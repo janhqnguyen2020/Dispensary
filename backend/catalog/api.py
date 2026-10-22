@@ -65,7 +65,7 @@ def list_products(
     if q:
         products = products.filter(
             Q(name__icontains = q) | Q(brand__name__icontains = q)
-            | Q(summary__icontains = 1) | Q(effects__icontains = 1)
+            | Q(summary__icontains = q) | Q(effects__icontains = q)
         )
 
     products = products.order_by("name", "id")

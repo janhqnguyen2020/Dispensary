@@ -15,12 +15,21 @@ class CategoryAdmin(admin.ModelAdmin):
     list_filter = ("limit_group",)
     search_fields = ("name", "slug")
 
+#shows variant rows (sizes) inside product edit page
+class VariantInline(admin.TabularInline):
+    model = Variant
+    extra = 1
+    readonly_fields = ("stock_reserved",)
+
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ("name", "brand", "category", "status", "is_featured","slug")
     search_fields = ("name", "brand__name", "slug")
     list_filter = ("status", "category", "brand", "is_featured")
+
+    list_editable = ("status", "is_featured")
+    inlines = [VariantInline]#sizes on product
 
 @admin.register(Variant)
 class VariantAdmin(admin.ModelAdmin):
@@ -35,4 +44,5 @@ class VariantAdmin(admin.ModelAdmin):
 
     list_filter = ("is_active",)
 
-    search_fields = ("product_name", "label")
+    search_fields = ("product__name", "label")
+    readonly_fields = ("stock_reserved",)
