@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "core",
-    "catalog"
+    "catalog",
+    "orders",#needs to know app exists to discover models, test, and project config
 ]
 
 MIDDLEWARE = [
